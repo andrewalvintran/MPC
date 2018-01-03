@@ -11,6 +11,8 @@
 
 // for convenience
 using json = nlohmann::json;
+using Eigen::VectorXd;
+using Eigen::Map;
 
 // For converting back and forth between radians and degrees.
 constexpr double pi() { return M_PI; }
@@ -100,6 +102,20 @@ int main() {
           */
           double steer_value;
           double throttle_value;
+
+          vector<double> car_coords_x;
+          vector<double> car_coords_y;
+          // convert points from map to car coordinates
+          for (size_t i = 0; i < ptsx.size(); i++) {
+            double dx = ptsx[i] - px;
+            double dy = ptsy[i] - py;
+            double x_coord = dx*cos(-psi) - dy*sin(-psi);
+            double y_coord = dx*sin(-psi) + dy*cos(-psi);
+            car_coords_x.push_back(x_coord);
+            car_coords_y.push_back(y_coord);
+          }
+          Map<VectorXd> car_ptsx(&car_coords_x[0], car_coords_x.size());
+          Map<VectorXd> car_ptsy(&car_coords_y[0], car_coords_y.size());
 
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
