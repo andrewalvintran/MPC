@@ -117,10 +117,20 @@ int main() {
           Map<VectorXd> car_ptsx(&car_coords_x[0], car_coords_x.size());
           Map<VectorXd> car_ptsy(&car_coords_y[0], car_coords_y.size());
 
+          auto coeffs = polyfit(car_ptsx, car_ptsy, 3);
+          double epsi = -atan(coeffs[1]);
+          double cte = polyeval(coeffs, 0);
+          VectorXd state;
+          state << 0.0, 0.0, 0.0, v, cte, epsi;
+
+          auto res = mpc.Solve(state, coeffs);
+          steer_value = res[0];
+          throttle_value = res[1];
+
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
           // Otherwise the values will be in between [-deg2rad(25), deg2rad(25] instead of [-1, 1].
-          msgJson["steering_angle"] = steer_value;
+          msgJson["steering_angle"] = steer_value / (deg2rad(25));
           msgJson["throttle"] = throttle_value;
 
           //Display the MPC predicted trajectory 
