@@ -114,18 +114,19 @@ int main() {
             car_coords_x.push_back(x_coord);
             car_coords_y.push_back(y_coord);
           }
+
           Map<VectorXd> car_ptsx(&car_coords_x[0], car_coords_x.size());
           Map<VectorXd> car_ptsy(&car_coords_y[0], car_coords_y.size());
 
           auto coeffs = polyfit(car_ptsx, car_ptsy, 3);
           double epsi = -atan(coeffs[1]);
           double cte = polyeval(coeffs, 0);
-          VectorXd state;
+          VectorXd state(6);
           state << 0.0, 0.0, 0.0, v, cte, epsi;
 
           auto res = mpc.Solve(state, coeffs);
-          steer_value = res[0];
-          throttle_value = res[1];
+          steer_value = res[6];
+          throttle_value = res[7];
 
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
@@ -134,8 +135,8 @@ int main() {
           msgJson["throttle"] = throttle_value;
 
           //Display the MPC predicted trajectory 
-          vector<double> mpc_x_vals;
-          vector<double> mpc_y_vals;
+          vector<double> mpc_x_vals = mpc.solution_x;
+          vector<double> mpc_y_vals = mpc.solution_y;
 
           //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
           // the points in the simulator are connected by a Green line
@@ -149,6 +150,11 @@ int main() {
 
           //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
           // the points in the simulator are connected by a Yellow line
+
+          for (size_t i = 0; i < ptsx.size(); i++) {
+            next_x_vals.push_back(car_ptsx[i]);
+            next_y_vals.push_back(car_ptsy[i]);
+          }
 
           msgJson["next_x"] = next_x_vals;
           msgJson["next_y"] = next_y_vals;

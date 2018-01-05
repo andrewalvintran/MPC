@@ -9,6 +9,8 @@ using namespace std;
 class MPC {
  public:
   MPC();
+  vector<double> solution_x;
+  vector<double> solution_y;
 
   virtual ~MPC();
 
