@@ -20,7 +20,7 @@ double dt = 0.2;
 //
 // This is the length from front to CoG that has a similar radius.
 const double Lf = 2.67;
-const double ref_v = 40;
+const double ref_v = 18.0;
 
 size_t x_start = 0;
 size_t y_start = x_start + N;
@@ -60,8 +60,8 @@ class FG_eval {
 
     // Minimize the value gap between sequential actuations.
     for (size_t t = 0; t < N - 2; t++) {
-      fg[0] += CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
-      fg[0] += CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
+      fg[0] += 1000.0*CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
+      fg[0] += 1000.0*CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
     }
 
     // initial state
