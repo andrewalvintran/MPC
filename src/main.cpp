@@ -19,7 +19,7 @@ constexpr double pi() { return M_PI; }
 double deg2rad(double x) { return x * pi() / 180; }
 double rad2deg(double x) { return x * 180 / pi(); }
 
-double const MPH_TO_METERS_PER_SEC = 0.44704;
+const double MPH_TO_METERS_PER_SEC = 0.44704;
 
 // Checks if the SocketIO event has JSON data.
 // If there is data the JSON object in string format will be returned,
@@ -69,6 +69,23 @@ Eigen::VectorXd polyfit(Eigen::VectorXd xvals, Eigen::VectorXd yvals,
   return result;
 }
 
+pair<vector<double>, vector<double>> convert_map_to_vehicle_coords(const vector<double>& ptsx, const vector<double>&ptsy, 
+                                                                   const double px, const double py, const double psi) {
+  vector<double> car_coords_x;
+  vector<double> car_coords_y;
+  // convert points from map to car coordinates
+  for (size_t i = 0; i < ptsx.size(); i++) {
+    double dx = ptsx[i] - px;
+    double dy = ptsy[i] - py;
+    double x_coord = dx*cos(-psi) - dy*sin(-psi);
+    double y_coord = dx*sin(-psi) + dy*cos(-psi);
+    car_coords_x.push_back(x_coord);
+    car_coords_y.push_back(y_coord);
+  }
+
+  return make_pair(car_coords_x, car_coords_y);
+}
+
 int main() {
   uWS::Hub h;
 
@@ -108,15 +125,7 @@ int main() {
 
           vector<double> car_coords_x;
           vector<double> car_coords_y;
-          // convert points from map to car coordinates
-          for (size_t i = 0; i < ptsx.size(); i++) {
-            double dx = ptsx[i] - px;
-            double dy = ptsy[i] - py;
-            double x_coord = dx*cos(-psi) - dy*sin(-psi);
-            double y_coord = dx*sin(-psi) + dy*cos(-psi);
-            car_coords_x.push_back(x_coord);
-            car_coords_y.push_back(y_coord);
-          }
+          tie(car_coords_x, car_coords_y) = convert_map_to_vehicle_coords(ptsx, ptsy, px, py, psi);
 
           Map<VectorXd> car_ptsx(&car_coords_x[0], car_coords_x.size());
           Map<VectorXd> car_ptsy(&car_coords_y[0], car_coords_y.size());
