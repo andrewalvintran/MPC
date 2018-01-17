@@ -19,6 +19,8 @@ constexpr double pi() { return M_PI; }
 double deg2rad(double x) { return x * pi() / 180; }
 double rad2deg(double x) { return x * 180 / pi(); }
 
+double const MPH_TO_METERS_PER_SEC = 0.44704;
+
 // Checks if the SocketIO event has JSON data.
 // If there is data the JSON object in string format will be returned,
 // else the empty string "" will be returned.
@@ -92,16 +94,17 @@ int main() {
           double px = j[1]["x"];
           double py = j[1]["y"];
           double psi = j[1]["psi"];
-          double v = j[1]["speed"];
+          double v = static_cast<double>(j[1]["speed"]) * MPH_TO_METERS_PER_SEC;
 
-          /*
-          * TODO: Calculate steering angle and throttle using MPC.
-          *
-          * Both are in between [-1, 1].
-          *
-          */
-          double steer_value;
-          double throttle_value;
+          double steer_value = static_cast<double>(j[1]["steering_angle"]) * deg2rad(25);
+          double throttle_value = j[1]["throttle"];
+
+          double const dt = 0.1; // 100 ms
+          double const Lf = 2.67;
+          px += v * cos(psi) * dt;
+          py += v * sin(psi) * dt;
+          psi += v * steer_value * dt / Lf;
+          v += throttle_value * dt;
 
           vector<double> car_coords_x;
           vector<double> car_coords_y;
@@ -122,6 +125,7 @@ int main() {
           double epsi = -atan(coeffs[1]);
           double cte = polyeval(coeffs, 0);
           VectorXd state(6);
+
           state << 0.0, 0.0, 0.0, v, cte, epsi;
 
           auto res = mpc.Solve(state, coeffs);

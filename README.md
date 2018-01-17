@@ -93,4 +93,13 @@ throttle_value = res[7];
 ```
 
 ## Latency
-Did not have to do anything special for 100 ms latency.  The vehicle stays on the road and does not go off the track so nothing extra was done to account fopr the latency.
+Latency is accounted for on lines 102-107 in main.cpp.  The update equations are done in map coordinates before the state is converted into vehicle coordinates.
+```
+  double const dt = 0.1; // 100 ms
+  double const Lf = 2.67;
+  px += v * cos(psi) * dt;
+  py += v * sin(psi) * dt;
+  psi += v * steer_value * dt / Lf;
+  v += throttle_value * dt;
+```
+The vehicle now moves at a faster rate and does not jerk and stop consistently.  The vehicle does cross over the lines at two points, but it never goes over the ledge or curb.
